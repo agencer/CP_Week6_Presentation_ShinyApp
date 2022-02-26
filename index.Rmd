@@ -1,0 +1,190 @@
+---
+title: "\"Geography, Transparency, and Institutions\" by Mayshar, Moav, and Neeman"
+subtitle: "Comparative Politics of Developing Countries, Week 6"
+author: "Presented by Cristina Mac Gregor Vanegas and Alper Sukru Gencer"
+output: html_document
+runtime: shiny
+---
+
+
+<br>
+</br>
+<br>
+</br>
+<br>
+</br>
+<br>
+</br>
+
+<center>
+![{***COVID-19: Novel Coronavirus***}](https://images.theconversation.com/files/381780/original/file-20210201-23-8r5dc1.jpg?ixlib=rb-1.1.0&q=45&auto=format&w=926&fit=clip)
+</center>
+
+
+
+<br>
+</br>
+<br>
+</br>
+<br>
+</br>
+<br>
+</br>
+
+## I. Introduction: 
+
+
+<br>
+</br>
+<br>
+</br>
+<br>
+</br>
+<br>
+</br>
+
+
+## II. Findings: 
+
+### **Proposition**:
+
+When the dismissal of farmers (x) is costly enough ($x>\hat{x}$),
+
+#### 1. The principal ruler sets the agent's wage  at its lowest possible value: 
+$$\underbrace{w}_{wage} = \underbrace{m}_{subsistence \  level} + \underbrace{\gamma}_{cost \ of \ high \ effort}$$
+
+#### 2. There exists a accuracy threshold $\hat{q} \in (0.5, 1)$ such that
+
+- if $q < \hat{q}$, the optimal contract is a pure-carrot contract:
+$$\underbrace{d_c = 0}_{Pure-Carrot} \ \ \And \ \ \underbrace{a_c}_{Agent's\ Action} = \underbrace{\gamma}_{Cost\ High\ Effort}/\underbrace{p}_{Pr\ Good\ State}$$
+
+- if $q > \hat{q}$, the optimal contract is a stick-and-carrot contract: 
+$$\underbrace{d_c = 0}_{Stick-and-Carrot} \ \ \And \ \ \underbrace{a_c}_{Agent's\ Action} = \frac{\gamma}{p} \bigg(1-\frac{pq\delta}{1-\delta(p+q-2pq)}\bigg)$$
+
+- if $q = \hat{q}$, then both preceding contracts are optimal. 
+
+
+<br>
+</br>
+<br>
+</br>
+<br>
+</br>
+<br>
+</br>
+
+## III. Comparative Statics
+
+
+```{r getting ready, echo= F, include=FALSE}
+####  Clear All
+rm(list = ls())
+####  Libraries
+library(shiny)
+library(tidyverse)
+library(dplyr)
+```
+
+```{r function, include = FALSE, warning = FALSE, message = FALSE}
+  ##Output
+my.fun <- function(x=2,m=0.5,p=0.8,H=1.1,L=0.6,delta=0.75,gamma=0.1,w=0.6){
+  q.vector <- seq(0.5,1,length.out=101)
+  y.vector <- seq(0.5,1,length.out=101)
+  mu <- (1-p)*(1-q.vector)
+    I.agent <- rep(m + 2*gamma,101)
+    pi.prin <- rep(p*(H-L)+L-2*gamma-m,101)
+    I.total <- I.agent + pi.prin
+    I.agent_sc <-  m + 2*gamma - (p*q.vector*delta*gamma)/(1-gamma*(p+q.vector+2*p*q.vector))
+    pi.prin_sc <-  p*(H-L)+L-2*gamma-m+(p*q.vector*delta*gamma)/(1-gamma*(p+q.vector+2*p*q.vector))-mu*x
+    I.total_sc <- I.agent_sc + pi.prin_sc
+    cost <- pi.prin - pi.prin_sc
+    choice <-  q.vector[which.min(abs(cost))]
+  df <- data.frame(q.vector,I.agent,pi.prin,I.total,I.agent_sc,pi.prin_sc,I.total_sc)
+  ggplot(df, aes(q.vector))+ # basic graphical object
+    geom_line(aes(y=I.agent), colour="black") +  # first layer
+    geom_line(aes(y=I.agent_sc), colour="black", linetype = "dashed") +  # first layer
+    geom_line(aes(y=pi.prin), colour="red") +  # first layer
+    geom_line(aes(y=pi.prin_sc), colour="red", linetype = "dashed") +  # first layer
+    geom_line(aes(y=I.total), colour="green")+
+    geom_line(aes(y=I.total_sc), colour="green", linetype = "dashed")+
+    geom_vline(aes(xintercept=choice), colour="blue", linetype = "twodash")+
+    ylab("Output") +
+    ggtitle("Change in the Output Level w/wo Property Right") +
+    xlab("Accuracy of the Signal") +
+    theme_light() +
+    theme(axis.text.x=element_text(angle=60, hjust=1))
+}
+```
+
+
+<center>
+```{r shiny, echo=FALSE}
+shinyApp(
+  ui = fluidPage(
+    sidebarLayout( ## Choosing layout with inputs on side and 
+      ## outputs displayed in the main body
+      sidebarPanel( #Things in this function specify the sidebar
+        numericInput(inputId = "p", 
+                  label = "Probability of Good State (p in [0,1])",
+                  value=0.8,
+                  min=0,
+                  max=1
+        ), 
+        numericInput(inputId = "x", 
+                  label = "Cost of Dismissal, (x>0)",
+                  value=2,
+                  min=0,
+                  max=NA
+        ),
+        numericInput(inputId = "m", 
+                  label = "The Cost of Subsistence, (m>0)",
+                  value=0.5,
+                  min=0,
+                  max=NA
+        ), 
+        numericInput(inputId = "H", 
+                  label = "High Annual Production, (H>L+(gamma/p))",
+                  value=1.1,
+                  min=0,
+                  max=NA
+        ),
+        numericInput(inputId = "L", 
+                  label = "Low Annual Production, (L>=m+Gamma)",
+                  value=0.6,
+                  min=0,
+                  max=NA
+        ), 
+        numericInput(inputId = "Gamma", 
+                  label = "Cost of High Effort (Gamma>0)",
+                  value=0.1,
+                  min=0,
+                  max=NA
+        ),
+        numericInput(inputId = "Delta", 
+                  label = "Future Discount (Delta in [0,1])",
+                  value=0.8,
+                  min=0,
+                  max=1
+        ), 
+        numericInput(inputId = "w", 
+                  label = "Cost of Dismissal (w>=m+Gamma)",
+                  value=0.6,
+                  min=0,
+                  max=NA
+        )),
+        ## End of sidebar
+        mainPanel(plotOutput("searchGraph"))
+    )
+  ),
+  server = function(input, output){
+  output$searchGraph <- renderPlot({
+      graph.output <- my.fun(p = input$p, x=input$x, m = input$m, H=input$H, 
+                             L = input$L, gamma=input$Gamma, delta = input$Delta, w=input$w)
+      print(graph.output)
+    })
+  },
+  options = list(height = 600)
+)
+```
+</center>
+

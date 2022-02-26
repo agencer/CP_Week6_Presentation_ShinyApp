@@ -1,0 +1,12 @@
+name: PDS_teambeta_project
+title: PDS_teambeta_project
+username:
+account: alper-gencer
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2230326
+bundleId: 3111350
+url: https://alper-gencer.shinyapps.io/PDS_teambeta_project/
+when: 1588777385.02382
+asMultiple: FALSE
+asStatic: FALSE
